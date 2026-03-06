@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超人数字猜谜游戏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #ff0000 0%, #ffff00 33%, #0066cc 66%, #ffffff 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1"/></svg>');
+            z-index: -1;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            border: 2px solid #ff0000;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #ff0000;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+        h2 {
+            text-align: center;
+            color: #0066cc;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+        .superman-logo {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        #supermanLogo {
+            width: 120px;
+            height: auto;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .game-section {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #0066cc;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #0066cc;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #ffffff;
+            margin-bottom: 15px;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .message {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .message.info {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #0d47a1;
+            border-left: 5px solid #1976d2;
+        }
+        .message.success {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            color: #1b5e20;
+            border-left: 5px solid #4caf50;
+        }
+        .message.error {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            color: #c62828;
+            border-left: 5px solid #f44336;
+        }
+        .message.warning {
+            background: linear-gradient(135deg, #fff3e0, #ffcc80);
+            color: #e65100;
+            border-left: 5px solid #ff9800;
+        }
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .stat-item {
+            font-size: 14px;
+            color: #0066cc;
+            font-weight: bold;
+        }
+        .stat-value {
+            font-weight: bold;
+            color: #ff0000;
+            font-size: 16px;
+        }
+        .hidden {
+            display: none;
+        }
+        .center {
+            text-align: center;
+        }
+        .final-message {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f0f8ff, #e3f2fd);
+            border-radius: 10px;
+            text-align: center;
+            border: 3px solid #0066cc;
+            box-shadow: 0 5px 20px rgba(0,102,204,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .final-message h3 {
+            margin-bottom: 15px;
+            color: #ff0000;
+            font-family: 'Bangers', cursive;
+            font-size: 28px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        .final-message p {
+            color: #0066cc;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .power-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="power-effect"></div>
+        <h1>数字猜谜游戏</h1>
+        
+
+        
+        <!-- 开始界面 -->
+        <div id="startScreen">
+            <h2>欢迎来到数字挑战！</h2>
+            <div class="input-group">
+                <label for="playerName">请输入你的名字：</label>
+                <input type="text" id="playerName" placeholder="输入你的名字">
+            </div>
+            <button id="startBtn">开始挑战</button>
+        </div>
+        
+        <!-- 游戏界面 -->
+        <div id="gameScreen" class="hidden">
+            <h2>挑战进行中</h2>
+            
+            <div class="game-stats">
+                <div class="stat-item">
+                    玩家：<span class="stat-value" id="currentPlayer"></span>
+                </div>
+                <div class="stat-item">
+                    挑战范围：1-<span class="stat-value" id="currentRange"></span>
+                </div>
+                <div class="stat-item">
+                    剩余机会：<span class="stat-value" id="remainingTries"></span>
+                </div>
+            </div>
+            
+            <div class="message info" id="gameMessage">
+                准备开始挑战！
+            </div>
+            
+            <div class="input-group">
+                <label for="guessInput">输入你的猜测（输入0退出挑战）：</label>
+                <input type="number" id="guessInput" placeholder="输入一个数字">
+            </div>
+            
+            <div class="button-container">
+                <button id="guessBtn">提交猜测</button>
+                <button id="exitBtn">退出挑战</button>
+            </div>
+        </div>
+        
+        <!-- 结束界面 -->
+        <div id="endScreen" class="hidden">
+            <div class="final-message" id="finalMessage"></div>
+            <button id="restartBtn">再次挑战</button>
+        </div>
+    </div>
+    
+    <script>
+        // 游戏变量
+        let playerName = "";
+        let x = 10;
+        const max_x = 100000;
+        let target = 0;
+        let times = 0;
+        let max_times = 5;
+        
+        // DOM元素
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const endScreen = document.getElementById('endScreen');
+        const playerNameInput = document.getElementById('playerName');
+        const startBtn = document.getElementById('startBtn');
+        const currentPlayer = document.getElementById('currentPlayer');
+        const currentRange = document.getElementById('currentRange');
+        const remainingTries = document.getElementById('remainingTries');
+        const gameMessage = document.getElementById('gameMessage');
+        const guessInput = document.getElementById('guessInput');
+        const guessBtn = document.getElementById('guessBtn');
+        const exitBtn = document.getElementById('exitBtn');
+        const finalMessage = document.getElementById('finalMessage');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        // 初始化游戏
+        function initGame() {
+            x = 10;
+            times = 0;
+            max_times = 5;
+            target = Math.floor(Math.random() * x) + 1;
+            updateGameStats();
+            showMessage('info', `${playerName}，欢迎来到数字挑战！`);
+            setTimeout(() => {
+                showMessage('info', `${playerName}，我正在想一个1到${x}之间的数字！`);
+            }, 1000);
+        }
+        
+        // 更新游戏状态
+        function updateGameStats() {
+            currentPlayer.textContent = playerName;
+            currentRange.textContent = x;
+            remainingTries.textContent = max_times - times;
+        }
+        
+        // 显示消息
+        function showMessage(type, text) {
+            gameMessage.className = `message ${type}`;
+            gameMessage.textContent = text;
+        }
+        
+        // 开始游戏
+        startBtn.addEventListener('click', function() {
+            const name = playerNameInput.value.trim();
+            if (name === "") {
+                alert("请输入你的名字！");
+                return;
+            }
+            playerName = name;
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            initGame();
+        });
+        
+        // 提交猜测
+        guessBtn.addEventListener('click', function() {
+            const guessStr = guessInput.value.trim();
+            
+            // 验证输入
+            if (guessStr === "") {
+                showMessage('error', "请输入一个数字！");
+                return;
+            }
+            
+            const guess = parseInt(guessStr);
+            
+            if (isNaN(guess)) {
+                showMessage('error', "请输入一个有效的数字！");
+                return;
+            }
+            
+            // 检查是否退出游戏
+            if (guess === 0) {
+                endGame(false, "你退出了挑战！");
+                return;
+            }
+            
+            // 检查输入范围
+            if (guess < 1 || guess > x) {
+                showMessage('warning', `请输入1到${x}之间的数字！`);
+                return;
+            }
+            
+            // 增加尝试次数
+            times++;
+            
+            // 检查是否猜对
+            if (guess === target) {
+                showMessage('success', `太棒了 ${playerName}！你猜对了！`);
+                
+                // 升级到下一关
+                x *= 10;
+                
+                // 检查是否达到游戏目标
+                if (x >= max_x) {
+                    endGame(true, `恭喜你 ${playerName}！你已经完成了所有挑战！`);
+                    return;
+                }
+                
+                // 重置游戏状态
+                target = Math.floor(Math.random() * x) + 1;
+                times = 0;
+                max_times *= 2;
+                
+                // 更新游戏状态
+                updateGameStats();
+                
+                // 显示新的游戏信息
+                setTimeout(() => {
+                    showMessage('info', `升级！现在挑战范围扩大到1-${x}，你有${max_times}次机会！`);
+                    setTimeout(() => {
+                        showMessage('info', `${playerName}，我正在想一个1到${x}之间的数字！`);
+                    }, 1500);
+                }, 1000);
+            } else if (guess < target) {
+                showMessage('warning', "你的猜测太小了！再试一次！");
+                checkTriesLeft();
+            } else {
+                showMessage('warning', "你的猜测太大了！再试一次！");
+                checkTriesLeft();
+            }
+            
+            // 清空输入框
+            guessInput.value = "";
+        });
+        
+        // 检查剩余尝试次数
+        function checkTriesLeft() {
+            updateGameStats();
+            
+            if (times >= max_times) {
+                endGame(false, `别灰心 ${playerName}！继续加油！`);
+            } else {
+                setTimeout(() => {
+                    showMessage('info', `剩余机会：${max_times - times}，加油！`);
+                }, 1000);
+            }
+        }
+        
+        // 退出游戏
+        exitBtn.addEventListener('click', function() {
+            endGame(false, "你退出了挑战！");
+        });
+        
+        // 结束游戏
+        function endGame(isWin, message) {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            let finalContent = `<h3>${message}</h3>`;
+            finalContent += `<p>挑战结束，${playerName}！</p>`;
+            if (isWin) {
+                finalContent += `<p>你展现了真正的挑战精神！</p>`;
+            } else {
+                finalContent += `<p>再接再厉，再次挑战！</p>`;
+            }
+            finalContent += `<p>愿原力与你同在！</p>`;
+            
+            finalMessage.innerHTML = finalContent;
+        }
+        
+        // 重新开始游戏
+        restartBtn.addEventListener('click', function() {
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            playerNameInput.value = "";
+        });
+        
+        // 回车键提交猜测
+        guessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                guessBtn.click();
+            }
+        });
+        
+        // 回车键开始游戏
+        playerNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

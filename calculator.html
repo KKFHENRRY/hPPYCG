@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简易计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .display {
+            background-color: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: right;
+            min-height: 60px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .operator-group {
+            margin: 20px 0;
+        }
+        .operators {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #5a6fd8;
+        }
+        button.operator {
+            background-color: #764ba2;
+        }
+        button.operator:hover {
+            background-color: #6441a5;
+        }
+        button.equals {
+            background-color: #f093fb;
+        }
+        button.equals:hover {
+            background-color: #e066fb;
+        }
+        .message {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            color: #721c24;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>简易计算器</h1>
+        <div class="display" id="display">0</div>
+        
+        <div id="firstNumberScreen">
+            <div class="input-group">
+                <label for="firstNumber">数字</label>
+                <input type="number" id="firstNumber" step="any" placeholder="请输入数字">
+            </div>
+            <button id="startBtn">开始计算</button>
+        </div>
+        
+        <div id="operatorScreen" class="hidden">
+            <div class="operator-group">
+                <label>符号</label>
+                <div class="operators">
+                    <button class="operator" data-operator="+">+</button>
+                    <button class="operator" data-operator="-">-</button>
+                    <button class="operator" data-operator="*">×</button>
+                    <button class="operator" data-operator="/">÷</button>
+                    <button class="equals" data-operator="=">=</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="secondNumberScreen" class="hidden">
+            <div class="input-group">
+                <label for="secondNumber">数字</label>
+                <input type="number" id="secondNumber" step="any" placeholder="请输入数字">
+            </div>
+            <button id="calculateBtn">计算</button>
+        </div>
+        
+        <div id="resultScreen" class="hidden">
+            <div class="message success" id="resultMessage"></div>
+            <button id="resetBtn">重新开始</button>
+        </div>
+        
+        <div class="message hidden" id="errorMessage"></div>
+    </div>
+    
+    <script>
+        // 游戏变量
+        let firstNumber = 0;
+        let secondNumber = 0;
+        let operator = "";
+        let result = 0;
+        
+        // DOM元素
+        const firstNumberScreen = document.getElementById('firstNumberScreen');
+        const operatorScreen = document.getElementById('operatorScreen');
+        const secondNumberScreen = document.getElementById('secondNumberScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        
+        const firstNumberInput = document.getElementById('firstNumber');
+        const secondNumberInput = document.getElementById('secondNumber');
+        const display = document.getElementById('display');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultMessage = document.getElementById('resultMessage');
+        
+        const startBtn = document.getElementById('startBtn');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const operatorButtons = document.querySelectorAll('.operator, .equals');
+        
+        // 开始计算
+        startBtn.addEventListener('click', function() {
+            const value = parseFloat(firstNumberInput.value);
+            if (isNaN(value)) {
+                showError('给我一个正确的数字');
+                return;
+            }
+            
+            firstNumber = value;
+            display.textContent = firstNumber;
+            hideError();
+            
+            firstNumberScreen.classList.add('hidden');
+            operatorScreen.classList.remove('hidden');
+        });
+        
+        // 选择运算符
+        operatorButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                operator = this.dataset.operator;
+                
+                if (operator === '=') {
+                    // 直接显示结果
+                    result = firstNumber;
+                    showResult();
+                } else {
+                    // 进入第二个数字输入
+                    operatorScreen.classList.add('hidden');
+                    secondNumberScreen.classList.remove('hidden');
+                }
+            });
+        });
+        
+        // 计算
+        calculateBtn.addEventListener('click', function() {
+            const value = parseFloat(secondNumberInput.value);
+            if (isNaN(value)) {
+                showError('给我一个正确的数字');
+                return;
+            }
+            
+            secondNumber = value;
+            
+            // 检查除法运算
+            if (operator === '/' && secondNumber === 0) {
+                showError('零不能作为除数，给我一个新的数字');
+                return;
+            }
+            
+            hideError();
+            
+            // 执行运算
+            switch (operator) {
+                case '+':
+                    result = firstNumber + secondNumber;
+                    break;
+                case '-':
+                    result = firstNumber - secondNumber;
+                    break;
+                case '*':
+                    result = firstNumber * secondNumber;
+                    break;
+                case '/':
+                    result = firstNumber / secondNumber;
+                    break;
+            }
+            
+            // 更新显示
+            display.textContent = `${firstNumber} ${operator} ${secondNumber} = ${result.toFixed(2)}`;
+            
+            // 连续计算：将结果作为下一次计算的第一个数字
+            firstNumber = result;
+            
+            // 清空第二个数字输入框
+            secondNumberInput.value = "";
+            
+            // 回到运算符选择界面
+            secondNumberScreen.classList.add('hidden');
+            operatorScreen.classList.remove('hidden');
+        });
+        
+        // 显示结果
+        function showResult() {
+            resultMessage.textContent = `结果是${result.toFixed(2)}`;
+            resultScreen.classList.remove('hidden');
+        }
+        
+        // 重新开始
+        resetBtn.addEventListener('click', function() {
+            // 重置变量
+            firstNumber = 0;
+            secondNumber = 0;
+            operator = "";
+            result = 0;
+            
+            // 重置输入框
+            firstNumberInput.value = "";
+            secondNumberInput.value = "";
+            display.textContent = "0";
+            
+            // 重置界面
+            resultScreen.classList.add('hidden');
+            operatorScreen.classList.add('hidden');
+            secondNumberScreen.classList.add('hidden');
+            firstNumberScreen.classList.remove('hidden');
+        });
+        
+        // 显示错误
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.classList.remove('hidden');
+        }
+        
+        // 隐藏错误
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+        
+        // 回车键提交
+        firstNumberInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startBtn.click();
+            }
+        });
+        
+        secondNumberInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

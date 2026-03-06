@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        h2 {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        .message {
+            background-color: #f0f8ff;
+            border-left: 4px solid #45b7d1;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-weight: bold;
+            white-space: pre-line;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #45b7d1;
+            box-shadow: 0 0 0 3px rgba(69, 183, 209, 0.2);
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            background-color: #45b7d1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #3a9cb5;
+        }
+        button.secondary {
+            background-color: #ff6b6b;
+        }
+        button.secondary:hover {
+            background-color: #ee5a52;
+        }
+        .mode-select {
+            margin: 20px 0;
+        }
+        .mode-option {
+            background-color: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .mode-option:hover {
+            border-color: #45b7d1;
+            background-color: #f0f8ff;
+        }
+        .mode-option.selected {
+            border-color: #45b7d1;
+            background-color: #e6f7ff;
+        }
+        .hidden {
+            display: none;
+        }
+        .attempts {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            color: #666;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>====== Number Game ======</h1>
+        <h2>Welcome to Number Game</h2>
+        
+        <!-- 开始界面 -->
+        <div id="startScreen">
+            <div class="input-group">
+                <label for="playerName">What's your name?</label>
+                <input type="text" id="playerName" placeholder="Enter your name">
+            </div>
+            <button id="startBtn">Start Game</button>
+        </div>
+        
+        <!-- 模式选择界面 -->
+        <div id="modeScreen" class="hidden">
+            <div class="message info" id="welcomeMessage"></div>
+            <h3>Game Modes</h3>
+            <div class="mode-select">
+                <div class="mode-option" data-mode="a">
+                    <strong>Mode 01 (Relax):</strong> Guess numbers without usage limit
+                </div>
+                <div class="mode-option" data-mode="b">
+                    <strong>Mode 02 (Hard):</strong> Guess numbers with usage limit
+                </div>
+                <div class="mode-option" data-mode="c">
+                    <strong>Mode 03 (Free):</strong> Guess numbers between 1 and a number you want
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="confirmModeBtn">Confirm Choice</button>
+                <button id="exitGameBtn" class="secondary">Exit Game</button>
+            </div>
+        </div>
+        
+        <!-- 子模式选择界面 -->
+        <div id="subModeScreen" class="hidden">
+            <div class="message info" id="subModeMessage"></div>
+            <div class="mode-select">
+                <div class="mode-option" data-submode="1">
+                    <strong>Option 1:</strong> Guess a number from 1 to 10
+                    <span id="attemptsInfo1" class="attempts"></span>
+                </div>
+                <div class="mode-option" data-submode="2">
+                    <strong>Option 2:</strong> Guess a number from 1 to 100
+                    <span id="attemptsInfo2" class="attempts"></span>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="confirmSubModeBtn">Confirm Choice</button>
+                <button id="backToModeBtn" class="secondary">Back</button>
+            </div>
+        </div>
+        
+        <!-- 自由模式界面 -->
+        <div id="freeModeScreen" class="hidden">
+            <div class="message info">Enter the maximum number for your custom range</div>
+            <div class="input-group">
+                <label for="maxNumber">Maximum Number:</label>
+                <input type="number" id="maxNumber" min="1" placeholder="Enter a number">
+            </div>
+            <div class="button-group">
+                <button id="startFreeModeBtn">Start Game</button>
+                <button id="backFromFreeBtn" class="secondary">Back</button>
+            </div>
+        </div>
+        
+        <!-- 游戏界面 -->
+        <div id="gameScreen" class="hidden">
+            <div class="message info" id="gameMessage"></div>
+            <div class="attempts" id="attemptsInfo"></div>
+            <div class="input-group">
+                <label for="guessInput">Enter your guess (or type '!' to exit):</label>
+                <input type="text" id="guessInput" placeholder="Enter a number">
+            </div>
+            <div class="button-group">
+                <button id="submitGuessBtn">Submit Guess</button>
+                <button id="exitGameBtn2" class="secondary">Exit Game</button>
+            </div>
+        </div>
+        
+        <!-- 结束界面 -->
+        <div id="endScreen" class="hidden">
+            <div class="message" id="endMessage"></div>
+            <div class="button-group">
+                <button id="playAgainBtn">Play Again</button>
+                <button id="exitGameBtn3" class="secondary">Exit Game</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 游戏变量
+        let playerName = "";
+        let currentMode = "";
+        let currentSubMode = "";
+        let targetNumber = 0;
+        let maxNumber = 10;
+        let attempts = 0;
+        let maxAttempts = 0;
+        
+        // DOM元素
+        const startScreen = document.getElementById('startScreen');
+        const modeScreen = document.getElementById('modeScreen');
+        const subModeScreen = document.getElementById('subModeScreen');
+        const freeModeScreen = document.getElementById('freeModeScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const endScreen = document.getElementById('endScreen');
+        
+        const playerNameInput = document.getElementById('playerName');
+        const startBtn = document.getElementById('startBtn');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const confirmModeBtn = document.getElementById('confirmModeBtn');
+        const exitGameBtn = document.getElementById('exitGameBtn');
+        const subModeMessage = document.getElementById('subModeMessage');
+        const confirmSubModeBtn = document.getElementById('confirmSubModeBtn');
+        const backToModeBtn = document.getElementById('backToModeBtn');
+        const maxNumberInput = document.getElementById('maxNumber');
+        const startFreeModeBtn = document.getElementById('startFreeModeBtn');
+        const backFromFreeBtn = document.getElementById('backFromFreeBtn');
+        const gameMessage = document.getElementById('gameMessage');
+        const attemptsInfo = document.getElementById('attemptsInfo');
+        const guessInput = document.getElementById('guessInput');
+        const submitGuessBtn = document.getElementById('submitGuessBtn');
+        const exitGameBtn2 = document.getElementById('exitGameBtn2');
+        const endMessage = document.getElementById('endMessage');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const exitGameBtn3 = document.getElementById('exitGameBtn3');
+        const attemptsInfo1 = document.getElementById('attemptsInfo1');
+        const attemptsInfo2 = document.getElementById('attemptsInfo2');
+        
+        // 模式选项
+        const modeOptions = document.querySelectorAll('.mode-option');
+        let selectedMode = null;
+        let selectedSubMode = null;
+        
+        // 开始游戏
+        startBtn.addEventListener('click', function() {
+            const name = playerNameInput.value.trim();
+            if (name === "") {
+                alert("Please enter your name!");
+                return;
+            }
+            playerName = name;
+            startScreen.classList.add('hidden');
+            modeScreen.classList.remove('hidden');
+            welcomeMessage.textContent = `Hello ${playerName}, welcome to Number Game! This game has two models.`;
+        });
+        
+        // 模式选择
+        modeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除其他选项的选中状态
+                this.parentElement.querySelectorAll('.mode-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                // 添加当前选项的选中状态
+                this.classList.add('selected');
+                
+                // 保存选中的模式
+                if (this.dataset.mode) {
+                    selectedMode = this.dataset.mode;
+                } else if (this.dataset.submode) {
+                    selectedSubMode = this.dataset.submode;
+                }
+            });
+        });
+        
+        // 确认模式选择
+        confirmModeBtn.addEventListener('click', function() {
+            if (!selectedMode) {
+                alert("Please select a mode!");
+                return;
+            }
+            
+            currentMode = selectedMode;
+            
+            if (currentMode === 'c') {
+                // 自由模式
+                modeScreen.classList.add('hidden');
+                freeModeScreen.classList.remove('hidden');
+            } else {
+                // 其他模式
+                modeScreen.classList.add('hidden');
+                subModeScreen.classList.remove('hidden');
+                
+                if (currentMode === 'a') {
+                    subModeMessage.textContent = `Hello ${playerName}, welcome to model01(relax)`;
+                    attemptsInfo1.textContent = "Guess a number from 1 to 10 without usage limit";
+                    attemptsInfo2.textContent = "Guess a number from 1 to 100 without usage limit";
+                } else if (currentMode === 'b') {
+                    subModeMessage.textContent = `Hello ${playerName}, welcome to model02(hard)`;
+                    attemptsInfo1.textContent = "If you choose this play, you will have 5 times to guess";
+                    attemptsInfo2.textContent = "If you choose this play, you will have 10 times to guess";
+                }
+            }
+        });
+        
+        // 确认子模式选择
+        confirmSubModeBtn.addEventListener('click', function() {
+            if (!selectedSubMode) {
+                alert("Please select an option!");
+                return;
+            }
+            
+            currentSubMode = selectedSubMode;
+            
+            // 设置游戏参数
+            if (currentSubMode === '1') {
+                maxNumber = 10;
+                if (currentMode === 'b') {
+                    maxAttempts = 5;
+                }
+            } else if (currentSubMode === '2') {
+                maxNumber = 100;
+                if (currentMode === 'b') {
+                    maxAttempts = 10;
+                }
+            }
+            
+            startGame();
+        });
+        
+        // 开始自由模式
+        startFreeModeBtn.addEventListener('click', function() {
+            const maxNum = parseInt(maxNumberInput.value);
+            if (isNaN(maxNum) || maxNum <= 0) {
+                alert("Please enter a valid positive number!");
+                return;
+            }
+            
+            maxNumber = maxNum;
+            startGame();
+        });
+        
+        // 开始游戏
+        function startGame() {
+            // 生成目标数字
+            targetNumber = Math.floor(Math.random() * maxNumber) + 1;
+            attempts = 0;
+            
+            // 隐藏当前界面，显示游戏界面
+            subModeScreen.classList.add('hidden');
+            freeModeScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            // 显示游戏信息
+            gameMessage.textContent = `Hello ${playerName}, I'm thinking of a number from 1 to ${maxNumber} (if you want to exit the game, type '!')`;
+            updateAttemptsInfo();
+        }
+        
+        // 更新尝试次数信息
+        function updateAttemptsInfo() {
+            if (currentMode === 'b') {
+                attemptsInfo.textContent = `Attempts: ${attempts}/${maxAttempts}`;
+            } else {
+                attemptsInfo.textContent = `Attempts: ${attempts}`;
+            }
+        }
+        
+        // 提交猜测
+        submitGuessBtn.addEventListener('click', function() {
+            const guessInputValue = guessInput.value.trim();
+            
+            // 检查是否退出游戏
+            if (guessInputValue === '!') {
+                endGame(false, "You exited the game");
+                return;
+            }
+            
+            // 验证输入
+            const guess = parseInt(guessInputValue);
+            if (isNaN(guess)) {
+                gameMessage.className = 'message error';
+                gameMessage.textContent = "You gave a wrong number, please give me a right number";
+                return;
+            }
+            
+            // 增加尝试次数
+            attempts++;
+            updateAttemptsInfo();
+            
+            // 检查是否猜对
+            if (guess === targetNumber) {
+                endGame(true, `Fantastic ${playerName}, you gave me a right number in ${attempts} times!`);
+            } else if (guess < targetNumber) {
+                gameMessage.className = 'message info';
+                gameMessage.textContent = "You gave a smaller number";
+            } else {
+                gameMessage.className = 'message info';
+                gameMessage.textContent = "You gave a bigger number";
+            }
+            
+            // 检查是否达到最大尝试次数
+            if (currentMode === 'b' && attempts >= maxAttempts && guess !== targetNumber) {
+                endGame(false, `What a pity. You haven't get a right number in ${maxAttempts} times.\nThe right number is ${targetNumber}.`);
+            }
+            
+            // 清空输入框
+            guessInput.value = "";
+        });
+        
+        // 结束游戏
+        function endGame(isWin, message) {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            endMessage.className = isWin ? 'message success' : 'message error';
+            endMessage.textContent = message + '\nMay the Force be with you!';
+        }
+        
+        // 返回按钮
+        backToModeBtn.addEventListener('click', function() {
+            subModeScreen.classList.add('hidden');
+            modeScreen.classList.remove('hidden');
+        });
+        
+        backFromFreeBtn.addEventListener('click', function() {
+            freeModeScreen.classList.add('hidden');
+            modeScreen.classList.remove('hidden');
+        });
+        
+        // 退出游戏
+        function exitGame() {
+            // 重置游戏状态
+            playerName = "";
+            currentMode = "";
+            currentSubMode = "";
+            targetNumber = 0;
+            maxNumber = 10;
+            attempts = 0;
+            maxAttempts = 0;
+            selectedMode = null;
+            selectedSubMode = null;
+            
+            // 重置输入框
+            playerNameInput.value = "";
+            maxNumberInput.value = "";
+            guessInput.value = "";
+            
+            // 显示开始界面
+            modeScreen.classList.add('hidden');
+            subModeScreen.classList.add('hidden');
+            freeModeScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+        
+        exitGameBtn.addEventListener('click', exitGame);
+        exitGameBtn2.addEventListener('click', exitGame);
+        exitGameBtn3.addEventListener('click', exitGame);
+        
+        // 再次游戏
+        playAgainBtn.addEventListener('click', function() {
+            endScreen.classList.add('hidden');
+            modeScreen.classList.remove('hidden');
+        });
+        
+        // 回车键提交
+        guessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitGuessBtn.click();
+            }
+        });
+        
+        playerNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

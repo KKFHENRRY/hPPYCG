@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .result h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .result p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .bmi-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.healthy {
+            color: #4CAF50;
+        }
+        .status.underweight {
+            color: #ff9800;
+        }
+        .status.overweight {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BMI计算器</h1>
+        <form id="bmiForm">
+            <div class="form-group">
+                <label for="weight">体重 (kg)</label>
+                <input type="number" id="weight" step="0.1" min="0.1" required>
+                <div class="error" id="weightError">请输入有效的正数</div>
+            </div>
+            <div class="form-group">
+                <label for="height">身高 (m)</label>
+                <input type="number" id="height" step="0.01" min="0.1" required>
+                <div class="error" id="heightError">请输入有效的正数</div>
+            </div>
+            <button type="button" id="calculateBtn">计算BMI</button>
+        </form>
+        <div class="result" id="result" style="display: none;">
+            <h2>计算结果</h2>
+            <p>你的BMI是 <span class="bmi-value" id="bmiValue"></span></p>
+            <p>状态: <span class="status" id="status"></span></p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            // 获取输入值
+            const weightInput = document.getElementById('weight');
+            const heightInput = document.getElementById('height');
+            const weightError = document.getElementById('weightError');
+            const heightError = document.getElementById('heightError');
+            const resultDiv = document.getElementById('result');
+            const bmiValueSpan = document.getElementById('bmiValue');
+            const statusSpan = document.getElementById('status');
+            
+            // 重置错误信息
+            weightError.style.display = 'none';
+            heightError.style.display = 'none';
+            
+            // 验证并获取数值
+            let weight = parseFloat(weightInput.value);
+            let height = parseFloat(heightInput.value);
+            
+            // 验证体重
+            if (isNaN(weight) || weight <= 0) {
+                weightError.style.display = 'block';
+                return;
+            }
+            
+            // 验证身高
+            if (isNaN(height) || height <= 0) {
+                heightError.style.display = 'block';
+                return;
+            }
+            
+            // 计算BMI
+            const bmi = weight / (height * height);
+            
+            // 确定状态
+            let status, statusClass;
+            if (bmi < 18.5) {
+                status = '偏瘦';
+                statusClass = 'underweight';
+            } else if (bmi >= 18.5 && bmi <= 23.9) {
+                status = '达到健康体重水平';
+                statusClass = 'healthy';
+            } else {
+                status = '超重';
+                statusClass = 'overweight';
+            }
+            
+            // 显示结果
+            bmiValueSpan.textContent = bmi.toFixed(2);
+            statusSpan.textContent = status;
+            statusSpan.className = 'status ' + statusClass;
+            resultDiv.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
